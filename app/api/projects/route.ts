@@ -1,68 +1,40 @@
-import { NextResponse } from "next/server"
-import { sql } from "@/lib/db"
+import { NextResponse } from "next/server";
+import { sql } from "@/lib/db";
 
+export const runtime = "edge";
 
-export const runtime = "edge"
-
-
-// GET semua todos
+// GET semua project
 export async function GET() {
   try {
-    const rows = await sql`SELECT * FROM todos ORDER BY created_at DESC`
-    return NextResponse.json(rows)
+    const rows = await sql`SELECT * FROM projects ORDER BY created_at DESC`;
+    return NextResponse.json(rows);
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
 
-
-// POST tambah todo baru
+// POST tambah project
 export async function POST(req: Request) {
   try {
-    const { title, description, due_date, priority } = await req.json()
+    const { title, description } = await req.json();
     const rows = await sql`
-      INSERT INTO todos (title, description, due_date, priority)
-      VALUES (${title}, ${description}, ${due_date}, ${priority})
-      RETURNING *
-    `
-    return NextResponse.json(rows[0], { status: 201 })
+      INSERT INTO projects (title, description)
+      VALUES (${title}, ${description})
+      RETURNING *;
+    `;
+    return NextResponse.json(rows[0], { status: 201 });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
 
-
-// PUT update todo
-export async function PUT(req: Request) {
-  try {
-    const { id, title, description, is_completed, due_date, priority } = await req.json()
-    const rows = await sql`
-      UPDATE todos
-      SET title = ${title},
-          description = ${description},
-          is_completed = ${is_completed},
-          due_date = ${due_date},
-          priority = ${priority},
-          updated_at = NOW()
-      WHERE id = ${id}
-      RETURNING *
-    `
-    return NextResponse.json(rows[0])
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
-  }
-}
-
-
-// DELETE hapus todo
+// DELETE hapus project
 export async function DELETE(req: Request) {
   try {
-    const { id } = await req.json()
-    await sql`DELETE FROM todos WHERE id = ${id}`
-    return NextResponse.json({ ok: true })
+    const { id } = await req.json();
+    await sql`DELETE FROM projects WHERE id = ${id}`;
+    return NextResponse.json({ ok: true });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
-
-
